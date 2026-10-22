@@ -28,7 +28,12 @@ One script does both the first install and every later upgrade. On the first run
 (it asks for the domain if you do not pass `--domain`), builds the image, starts the container,
 waits for the health check and tests the site and the analytics proxy.
 
-Options: `--domain URL`, `--port N` (default 8080), `--no-pull` (skip `git pull`), `--help`.
+Options: `--domain URL`, `--port N`, `--no-pull` (skip `git pull`), `--help`.
+
+**Port:** the script scans for a free port starting at 8080 on the first run and saves it as `PORT` in `.env`,
+so every later upgrade reuses it. If the saved port gets taken by another program while the site is not running,
+it picks the next free one and updates `.env`. `--port N` forces a port (and fails if it is busy).
+The final port is printed at the end of the run.
 
 The site then listens on `http://127.0.0.1:${PORT}`. Put your HTTPS reverse proxy
 (Caddy, nginx, Traefik, Cloudflare Tunnel...) in front of it and point your domain there.
@@ -112,7 +117,7 @@ to Umami and gzips text. HTML is never cached, so edit and refresh. Restart it a
 | Setting | Where | Notes |
 |---|---|---|
 | `DOMAIN` | `.env` | public address, baked in at build time, so rebuild after changing: `./update.sh --no-pull` |
-| `PORT` | `.env` | host port published by Docker (default 8080) |
+| `PORT` | `.env` | host port published by Docker; auto-selected (first free from 8080) and saved by `update.sh`, or force with `--port` |
 | phone / WhatsApp | `site/index.html` | search for `972508887544` / `050-888-7544` |
 | Umami website id | `site/index.html` | `data-website-id`, appears twice (analytics + replay) |
 | Umami server | `nginx.conf`, `serve.mjs` | `umami.dzev.net` in the `/stats/` proxy |
@@ -141,5 +146,5 @@ Analytics events (visible in Umami): `call-click`, `whatsapp-click`, `share-face
   server cannot reach `umami.dzev.net` (DNS/firewall), or Umami itself is down. The page works without it.
 - **Old content after upgrade:** hard refresh. HTML is cached 1 hour, images 30 days (image file names change when images change).
 - **`update.sh` says local changes:** `git status`, then commit, `git stash`, or use `./update.sh --no-pull`.
-- **Port already in use:** change `PORT` in `.env`, then `docker compose up -d`.
+- **Port already in use:** run `./update.sh` (it picks and saves a free port), or force one with `--port N`.
 - **Wrong domain in sitemap or share links:** fix `DOMAIN` in `.env`, then `./update.sh --no-pull`.
