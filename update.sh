@@ -4,7 +4,8 @@
 #   ./update.sh                              first run: asks for the domain, creates .env, builds and starts.
 #                                            later runs: pulls the latest from git, rebuilds, restarts.
 #   ./update.sh --domain https://x.co.il     set / change the public domain (non-interactive)
-#   ./update.sh --port 8081                  set / change the host port
+#   ./update.sh --port 8081                  use this host port (must be free). Without it the script picks the
+#                                            first free port from 8080 up and remembers it in .env
 #   ./update.sh --no-pull                    rebuild from the files on disk, skip git pull
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -14,7 +15,7 @@ PULL=1
 ARG_DOMAIN=""
 ARG_PORT=""
 
-usage() { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; }
 die() { echo "Error: $*" >&2; exit 1; }
 
 while [ $# -gt 0 ]; do
@@ -46,6 +47,18 @@ set_env() {
 }
 get_env() { grep "^$1=" .env 2>/dev/null | tail -n1 | cut -d= -f2- || true; }
 
+# is something already listening on this local port? (plain bash, works on Linux and macOS)
+port_busy() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
+# first free port at or above $1
+find_port() {
+  local p="$1" end=$(( $1 + 200 ))
+  while [ "$p" -le "$end" ]; do
+    port_busy "$p" || { echo "$p"; return 0; }
+    p=$(( p + 1 ))
+  done
+  return 1
+}
+
 # ---- configuration (.env) ----
 FIRST_RUN=0
 [ -f .env ] || FIRST_RUN=1
@@ -59,8 +72,23 @@ fi
 DOMAIN_VAL="${DOMAIN_VAL%/}"
 [[ "$DOMAIN_VAL" == *example.co.il* ]] && die "DOMAIN is still the placeholder"
 
-PORT_VAL="${ARG_PORT:-$(get_env PORT)}"
-PORT_VAL="${PORT_VAL:-8080}"
+# ---- port: keep the saved one, otherwise scan for a free one and remember it ----
+# the host port our own container already publishes (empty on the first run)
+CUR_PORT=$(docker port "$NAME" 80/tcp 2>/dev/null | head -n1 | sed 's/.*://' || true)
+SAVED_PORT="$(get_env PORT)"
+if [ -n "$ARG_PORT" ]; then
+  [[ "$ARG_PORT" =~ ^[0-9]+$ ]] || die "--port must be a number (got: $ARG_PORT)"
+  PORT_VAL="$ARG_PORT"
+  [ "$PORT_VAL" = "$CUR_PORT" ] || ! port_busy "$PORT_VAL" || die "port $PORT_VAL is already in use. Pick another with --port, or omit it to auto-select"
+elif [ -z "$SAVED_PORT" ]; then
+  PORT_VAL=$(find_port 8080) || die "no free port found between 8080 and 8280"
+  echo "Free port found: $PORT_VAL"
+elif [ "$SAVED_PORT" = "$CUR_PORT" ] || ! port_busy "$SAVED_PORT"; then
+  PORT_VAL="$SAVED_PORT"
+else
+  PORT_VAL=$(find_port $(( SAVED_PORT + 1 ))) || die "no free port found above $SAVED_PORT"
+  echo "Port $SAVED_PORT is taken by something else; using $PORT_VAL"
+fi
 [[ "$PORT_VAL" =~ ^[0-9]+$ ]] || die "PORT must be a number (got: $PORT_VAL)"
 
 set_env DOMAIN "$DOMAIN_VAL"
