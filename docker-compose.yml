@@ -1,0 +1,10 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        DOMAIN: ${DOMAIN:-https://example.co.il}
+    container_name: hilutzei-shetach
+    restart: unless-stopped
+    ports:
+      - "8080:80"

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" role="img" aria-labelledby="t">
+<title id="t">חילוץ ג'יפ שנתקע בדיונת חול</title>
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f3a2b"/><stop offset=".55" stop-color="#d9822b"/><stop offset="1" stop-color="#fbd38d"/></linearGradient>
+<linearGradient id="d1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9b872"/><stop offset="1" stop-color="#d99a4a"/></linearGradient>
+<linearGradient id="d2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d28d3c"/><stop offset="1" stop-color="#b9702a"/></linearGradient>
+<linearGradient id="d3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c47f2f"/><stop offset="1" stop-color="#8f5a22"/></linearGradient>
+</defs>
+<rect width="1200" height="460" fill="url(#sky)"/>
+<circle cx="930" cy="170" r="70" fill="#fff3c4" opacity=".95"/>
+<circle cx="930" cy="170" r="110" fill="#fff3c4" opacity=".18"/>
+<path d="M0 290 C150 220 300 250 430 280 C600 215 760 235 900 275 C1020 240 1120 250 1200 270 V460 H0Z" fill="url(#d1)"/>
+<path d="M0 340 C140 290 280 300 420 335 C560 290 700 300 820 330 C960 295 1090 305 1200 330 V460 H0Z" fill="url(#d2)"/>
+<!-- stuck jeep -->
+<g transform="translate(250 252) rotate(-7 130 90)">
+<ellipse cx="130" cy="150" rx="150" ry="14" fill="#000" opacity=".22"/>
+<path d="M0 100 L10 62 Q14 52 26 52 H62 L92 18 Q98 12 108 12 H196 Q208 12 214 22 L236 56 H262 Q276 56 280 70 V100 Q280 112 268 112 H12 Q0 112 0 100Z" fill="#1f3a2b"/>
+<path d="M82 52 L106 24 H150 V52Z M162 52 V24 H196 L218 52Z" fill="#cfe7ef"/>
+<rect x="95" y="6" width="110" height="6" rx="3" fill="#0f1f17"/>
+<rect x="266" y="72" width="14" height="14" rx="3" fill="#ffd36b"/>
+<rect x="2" y="72" width="12" height="12" rx="3" fill="#ff7a59"/>
+<circle cx="68" cy="116" r="30" fill="#161616"/><circle cx="68" cy="116" r="14" fill="#8a8a8a"/>
+<circle cx="214" cy="116" r="30" fill="#161616"/><circle cx="214" cy="116" r="14" fill="#8a8a8a"/>
+</g>
+<!-- sand covering the wheels -->
+<path d="M90 356 C170 326 250 304 340 306 C420 308 470 330 560 352 C600 362 640 372 680 380 V400 H90Z" fill="#c9833a"/><path d="M90 372 C200 352 300 346 420 356 C520 364 600 376 680 388 V400 H90Z" fill="#b9702a"/>
+<!-- recovery truck -->
+<g transform="translate(700 232)">
+<ellipse cx="170" cy="138" rx="180" ry="13" fill="#000" opacity=".22"/>
+<rect x="0" y="62" width="214" height="50" rx="6" fill="#f59e0b"/>
+<path d="M214 112 V62 H250 L284 86 V112Z" fill="#f59e0b"/>
+<path d="M252 66 L276 86 H252Z" fill="#cfe7ef"/>
+<rect x="18" y="40" width="150" height="24" rx="4" fill="#2a2a2a"/>
+<rect x="30" y="22" width="14" height="20" fill="#2a2a2a"/>
+<rect x="16" y="92" width="170" height="6" fill="#7a4a00" opacity=".5"/>
+<circle cx="56" cy="116" r="24" fill="#161616"/><circle cx="56" cy="116" r="11" fill="#8a8a8a"/>
+<circle cx="242" cy="116" r="24" fill="#161616"/><circle cx="242" cy="116" r="11" fill="#8a8a8a"/>
+<circle cx="8" cy="52" r="6" fill="#ff3b30"/>
+</g>
+<!-- winch rope -->
+<path d="M700 306 C640 326 590 318 520 300" fill="none" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
+<circle cx="520" cy="300" r="6" fill="#2a2a2a"/>
+<path d="M0 410 C200 380 420 395 620 405 C860 385 1040 392 1200 400 V460 H0Z" fill="#6f4519"/>
+</svg>
