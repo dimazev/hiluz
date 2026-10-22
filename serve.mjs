@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), 'site');
 const port = Number(process.argv[2] ?? process.env.PORT ?? 8080);
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif', '.js': 'application/javascript', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif', '.js': 'application/javascript', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 
 const UMAMI = 'https://umami.dzev.net';
 
@@ -41,7 +41,7 @@ createServer(async (req, res) => {
   try {
     // the Docker build swaps __DOMAIN__ in; do the same here so the preview matches
     let body = await readFile(file);
-    if (/\.(html|txt|xml)$/.test(file)) body = Buffer.from(body.toString().replaceAll('__DOMAIN__', `http://localhost:${port}`));
+    if (/\.(html|txt|xml|webmanifest)$/.test(file)) body = Buffer.from(body.toString().replaceAll('__DOMAIN__', `http://localhost:${port}`).replaceAll('__LASTMOD__', new Date().toISOString().slice(0, 10)));
     const ext = extname(file);
     const text = /\.(html|css|svg|txt|xml)$/.test(file);
     const gz = text && String(req.headers['accept-encoding']).includes('gzip');
