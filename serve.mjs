@@ -48,7 +48,7 @@ createServer(async (req, res) => {
     // html is never cached (edit + refresh); images and the like are, as nginx does
     res.writeHead(200, {
       'content-type': types[ext] ?? 'application/octet-stream',
-      'cache-control': ext === '.html' ? 'no-store' : 'public, max-age=86400',
+      'cache-control': ext === '.html' ? 'no-store' : /\.(avif|webp|png|jpe?g|svg)$/.test(file) ? 'public, max-age=2592000, immutable' : 'public, max-age=86400',
       ...(gz ? { 'content-encoding': 'gzip' } : {})
     });
     res.end(gz ? gzipSync(body) : body);
