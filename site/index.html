@@ -33,7 +33,9 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Arial,"Noto Sans Hebrew",san
 a{color:inherit}
 .wrap{max-width:1000px;margin:0 auto;padding:0 18px}
 header.hero{background:linear-gradient(160deg,var(--dark),var(--dark2));color:#fff;padding:0 0 44px;text-align:center}
-.banner{display:block;width:100%;height:auto;max-height:460px;object-fit:cover;object-position:center 62%;margin-bottom:26px}
+.bannerwrap{overflow:hidden;max-height:460px;margin-bottom:26px;position:relative}
+.bannerwrap::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(to top,var(--dark2),transparent);pointer-events:none}
+.banner{display:block;width:100%;height:auto;max-height:460px;object-fit:cover;object-position:center 62%;transform-origin:62% 60%}
 .brand{font-weight:800;letter-spacing:.3px;opacity:.9;margin-bottom:18px}
 h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.2;margin-bottom:12px}
 h1 .sub{display:block;font-size:.5em;font-weight:700;color:var(--accent);margin-top:6px}
@@ -67,8 +69,35 @@ footer a{color:var(--muted)}
 .bar{position:fixed;inset:auto 0 0 0;display:flex;gap:8px;padding:10px;background:rgba(255,255,255,.96);border-top:1px solid var(--line);z-index:9}
 .bar .btn{flex:1;justify-content:center;padding:12px 8px;font-size:1rem}
 @media(min-width:760px){.bar{display:none}body{padding-bottom:0}}
+
+/* motion: transform/opacity only (cheap on phones); all off for reduced-motion users */
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.14)}}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(245,158,11,.65)}70%{box-shadow:0 0 0 18px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
+@keyframes bar{from{transform:translateY(110%)}to{transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.banner{animation:zoom 16s cubic-bezier(.2,.6,.2,1) both}
+.hero .brand,.hero h1,.hero .lead,.hero .cta{animation:up .7s cubic-bezier(.2,.7,.2,1) both}
+.hero .brand{animation-delay:.1s}.hero h1{animation-delay:.2s}.hero .lead{animation-delay:.35s}.hero .cta{animation-delay:.5s}
+.hero h1 .sub{display:block}
+.chips li{animation:pop .5s cubic-bezier(.2,.9,.3,1.3) both}
+.chips li:nth-child(1){animation-delay:.65s}.chips li:nth-child(2){animation-delay:.72s}.chips li:nth-child(3){animation-delay:.79s}.chips li:nth-child(4){animation-delay:.86s}.chips li:nth-child(5){animation-delay:.93s}.chips li:nth-child(6){animation-delay:1s}
+.hero .btn.call{animation:up .7s .5s both,ring 2.4s 1.6s infinite}
+.bar{animation:bar .6s .8s cubic-bezier(.2,.7,.2,1) both}
+.bar .btn.call{animation:ring 2.4s 2s infinite}
+.btn,.card,summary{transition:transform .18s ease,box-shadow .18s ease}
+.btn:active{transform:scale(.95)}
+.card:active{transform:scale(.98)}
+@media(hover:hover){.card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(31,58,43,.14)}.btn:hover{transform:translateY(-2px)}}
+.js .reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.js .reveal.in{opacity:1;transform:none}
+details[open] summary{color:var(--accent-d,#b45309)}
+details>p{animation:up .35s ease both}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.js .reveal{opacity:1;transform:none}}
 </style>
 <script defer src="/stats/script.js" data-website-id="fa409349-2bfe-42c3-93b9-e9108f20bc0b"></script>
+<script>document.documentElement.className="js"</script>
 <script>
 // session replay is heavy (~190 KB): load it only after the page is interactive, so it never competes with first paint
 (function(){var d=0;function l(){if(d)return;d=1;var s=document.createElement('script');s.src='/stats/recorder.js';s.defer=true;s.setAttribute('data-website-id','fa409349-2bfe-42c3-93b9-e9108f20bc0b');document.head.appendChild(s)}
@@ -78,7 +107,7 @@ addEventListener('load',function(){setTimeout(l,4000)})})();
 </head>
 <body>
 <header class="hero">
-<picture><source type="image/avif" srcset="hilutz-shetach-silverado-razer-480.avif 480w, hilutz-shetach-silverado-razer-800.avif 800w, hilutz-shetach-silverado-razer-1024.avif 1024w" sizes="100vw"><img class="banner" src="hilutz-shetach-silverado-razer-1024.webp" srcset="hilutz-shetach-silverado-razer-480.webp 480w, hilutz-shetach-silverado-razer-800.webp 800w, hilutz-shetach-silverado-razer-1024.webp 1024w" sizes="100vw" width="1024" height="559" alt="ג'יפ סילברדו עם כננת מחלץ רייזר שנתקע בחול בדיונות, בשקיעה" fetchpriority="high" decoding="async"></picture>
+<div class="bannerwrap"><picture><source type="image/avif" srcset="hilutz-shetach-silverado-razer-480.avif 480w, hilutz-shetach-silverado-razer-800.avif 800w, hilutz-shetach-silverado-razer-1024.avif 1024w" sizes="100vw"><img class="banner" src="hilutz-shetach-silverado-razer-1024.webp" srcset="hilutz-shetach-silverado-razer-480.webp 480w, hilutz-shetach-silverado-razer-800.webp 800w, hilutz-shetach-silverado-razer-1024.webp 1024w" sizes="100vw" width="1024" height="559" alt="ג'יפ סילברדו עם כננת מחלץ רייזר שנתקע בחול בדיונות, בשקיעה" fetchpriority="high" decoding="async"></picture></div>
 <div class="wrap">
 <div class="brand">חילוצי שטח 4X4 · 24/7</div>
 <h1>חילוץ שטח 24/7<span class="sub">ג'יפים, טרקטורונים, רייזרים ואופנועי שטח</span></h1>
@@ -174,5 +203,11 @@ addEventListener('load',function(){setTimeout(l,4000)})})();
 <a data-umami-event="call-click" class="btn call" href="tel:+972508887544">התקשרו</a>
 <a data-umami-event="whatsapp-click" class="btn wa" href="https://wa.me/972508887544" rel="noopener">ווטסאפ</a>
 </div>
+<script>
+(function(){var els=[].slice.call(document.querySelectorAll('.card,section>h2,.contact,details,.grid+h2,#tips li'));
+if(!('IntersectionObserver'in window)){els.forEach(function(e){e.classList.add('in')});return}
+var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{rootMargin:'0px 0px -8% 0px',threshold:.08});
+els.forEach(function(e,i){e.classList.add('reveal');e.style.setProperty('--d',(i%3)*.08+'s');io.observe(e)})})();
+</script>
 </body>
 </html>
