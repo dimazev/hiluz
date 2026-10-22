@@ -1,12 +1,13 @@
 // tiny static server for local preview (F5 in VS Code): node serve.mjs [port]
 import { createServer } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), 'site');
 const port = Number(process.argv[2] ?? process.env.PORT ?? 8080);
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif', '.js': 'application/javascript', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
 
 const UMAMI = 'https://umami.dzev.net';
 
@@ -23,8 +24,12 @@ createServer(async (req, res) => {
         body: req.method === 'GET' || req.method === 'HEAD' ? undefined : body
       });
       if (up.status >= 400) console.log(req.method, req.url, up.status);
-      res.writeHead(up.status, { 'content-type': up.headers.get('content-type') ?? 'text/plain' });
-      res.end(Buffer.from(await up.arrayBuffer()));
+      const ct = up.headers.get('content-type') ?? 'text/plain';
+      const data = Buffer.from(await up.arrayBuffer());
+      const js = ct.includes('javascript');
+      const gz = js && String(req.headers['accept-encoding']).includes('gzip');
+      res.writeHead(up.status, { 'content-type': ct, 'cache-control': js ? 'public, max-age=86400' : 'no-store', ...(gz ? { 'content-encoding': 'gzip' } : {}) });
+      res.end(gz ? gzipSync(data) : data);
     } catch {
       res.writeHead(502);
       res.end('analytics unavailable');
@@ -37,8 +42,16 @@ createServer(async (req, res) => {
     // the Docker build swaps __DOMAIN__ in; do the same here so the preview matches
     let body = await readFile(file);
     if (/\.(html|txt|xml)$/.test(file)) body = Buffer.from(body.toString().replaceAll('__DOMAIN__', `http://localhost:${port}`));
-    res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
-    res.end(body);
+    const ext = extname(file);
+    const text = /\.(html|css|svg|txt|xml)$/.test(file);
+    const gz = text && String(req.headers['accept-encoding']).includes('gzip');
+    // html is never cached (edit + refresh); images and the like are, as nginx does
+    res.writeHead(200, {
+      'content-type': types[ext] ?? 'application/octet-stream',
+      'cache-control': ext === '.html' ? 'no-store' : 'public, max-age=86400',
+      ...(gz ? { 'content-encoding': 'gzip' } : {})
+    });
+    res.end(gz ? gzipSync(body) : body);
   } catch {
     res.writeHead(404, { 'content-type': 'text/plain' });
     res.end('not found');

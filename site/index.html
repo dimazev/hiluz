@@ -14,7 +14,7 @@
 <meta property="og:locale" content="he_IL">
 <meta property="og:title" content="חילוץ שטח 24/7 | ג'יפים, טרקטורונים, רייזרים ואופנועי שטח">
 <meta property="og:description" content="חילוץ שטח 24/7. המחיר נמסר לפני שיוצאים אליכם. שלחו מיקום בווטסאפ או התקשרו.">
-<link rel="preload" as="image" href="hilutz-shetach-silverado-razer.webp" imagesrcset="hilutz-shetach-silverado-razer-640.webp 640w, hilutz-shetach-silverado-razer.webp 1024w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" type="image/avif" imagesrcset="hilutz-shetach-silverado-razer-480.avif 480w, hilutz-shetach-silverado-razer-800.avif 800w, hilutz-shetach-silverado-razer-1024.avif 1024w" imagesizes="100vw" fetchpriority="high">
 <meta property="og:url" content="__DOMAIN__/">
 <meta property="og:image" content="__DOMAIN__/og-image.jpg">
 <meta property="og:image:width" content="1200">
@@ -69,11 +69,16 @@ footer a{color:var(--muted)}
 @media(min-width:760px){.bar{display:none}body{padding-bottom:0}}
 </style>
 <script defer src="/stats/script.js" data-website-id="fa409349-2bfe-42c3-93b9-e9108f20bc0b"></script>
-<script defer src="/stats/recorder.js" data-website-id="fa409349-2bfe-42c3-93b9-e9108f20bc0b"></script>
+<script>
+// session replay is heavy (~190 KB): load it only after the page is interactive, so it never competes with first paint
+(function(){var d=0;function l(){if(d)return;d=1;var s=document.createElement('script');s.src='/stats/recorder.js';s.defer=true;s.setAttribute('data-website-id','fa409349-2bfe-42c3-93b9-e9108f20bc0b');document.head.appendChild(s)}
+['pointerdown','keydown','scroll','touchstart'].forEach(function(e){addEventListener(e,l,{once:true,passive:true})});
+addEventListener('load',function(){setTimeout(l,4000)})})();
+</script>
 </head>
 <body>
 <header class="hero">
-<img class="banner" src="hilutz-shetach-silverado-razer.webp" srcset="hilutz-shetach-silverado-razer-640.webp 640w, hilutz-shetach-silverado-razer.webp 1024w" sizes="100vw" width="1024" height="559" alt="ג'יפ סילברדו עם כננת מחלץ רייזר שנתקע בחול בדיונות, בשקיעה" fetchpriority="high" decoding="async">
+<picture><source type="image/avif" srcset="hilutz-shetach-silverado-razer-480.avif 480w, hilutz-shetach-silverado-razer-800.avif 800w, hilutz-shetach-silverado-razer-1024.avif 1024w" sizes="100vw"><img class="banner" src="hilutz-shetach-silverado-razer-1024.webp" srcset="hilutz-shetach-silverado-razer-480.webp 480w, hilutz-shetach-silverado-razer-800.webp 800w, hilutz-shetach-silverado-razer-1024.webp 1024w" sizes="100vw" width="1024" height="559" alt="ג'יפ סילברדו עם כננת מחלץ רייזר שנתקע בחול בדיונות, בשקיעה" fetchpriority="high" decoding="async"></picture>
 <div class="wrap">
 <div class="brand">חילוצי שטח 4X4 · 24/7</div>
 <h1>חילוץ שטח 24/7<span class="sub">ג'יפים, טרקטורונים, רייזרים ואופנועי שטח</span></h1>
