@@ -12,6 +12,7 @@ Umami analytics is served first-party through nginx under `/stats/` (no third-pa
 - [Local preview (no Docker)](#local-preview-no-docker)
 - [Configuration](#configuration)
 - [Project layout](#project-layout)
+- [SEO monitoring](#seo-monitoring-daily-with-logs)
 - [Troubleshooting](#troubleshooting)
 
 ## Start (first time)
@@ -136,8 +137,48 @@ Analytics events (visible in Umami): `call-click`, `whatsapp-click`, `share-face
 | `nginx.conf` | gzip, caching, security headers, `/stats/` proxy |
 | `Dockerfile`, `docker-compose.yml` | image and container |
 | `update.sh` | pull, rebuild, restart, verify |
+| `seo/check.mjs`, `seo/cron.sh` | daily SEO check and its cron installer |
 | `serve.mjs` | local preview server |
 | `.vscode/` | F5 launch configuration and Docker tasks |
+
+## SEO monitoring (daily, with logs)
+
+`seo/check.mjs` checks every day how the site is doing in Google and writes logs you can use to improve SEO.
+It needs only Node 18+ (or Docker: the cron wrapper falls back to a `node:22-alpine` container).
+
+```bash
+./seo/cron.sh install 06:00     # daily at 06:00 (server time); remove with ./seo/cron.sh remove
+./seo/cron.sh run               # run it now and print the summary
+./seo/cron.sh status            # cron entry + last output
+```
+
+What it collects (each source is independent; one failing never stops the others):
+
+| Source | What you get | Setup |
+|---|---|---|
+| **On-page check** of the live site | HTTP status, response time, title/description length, H1 count, canonical, alt texts, structured data validity, robots.txt, sitemap, leftover placeholder domain | none |
+| **PageSpeed Insights** (mobile + desktop) | Lighthouse scores (performance, SEO, accessibility, best practices), LCP/CLS/TBT, real-user Core Web Vitals, list of audits to fix | `PSI_API_KEY` in `.env` (free; without it Google's shared quota is usually exhausted) |
+| **Google Search Console** | **how Google places the site**: clicks, impressions, CTR, average position (last 30 days, data lags 2-3 days), top 50 queries, and the URL Inspection result: indexed or not, last crawl time, Google-selected canonical, sitemap status | `GSC_KEY_FILE`, `GSC_SITE` |
+| **SerpAPI** (optional, paid) | today's exact position for each keyword in `SEO_QUERIES` (google.co.il, Hebrew), and the top-3 competitors | `SERPAPI_KEY` |
+
+Search Console setup (one time, about 5 minutes):
+1. In Google Cloud Console create a project, enable **Google Search Console API**, create a **service account** and download its JSON key. Save it on the server (for example `./gsc-key.json`, it is git-ignored).
+2. In Search Console: your property, Settings, Users and permissions, add the service account's `client_email` as a user (Restricted is enough).
+3. In `.env`: `GSC_KEY_FILE=./gsc-key.json` and `GSC_SITE=` the property exactly as Search Console shows it (`https://your-domain.co.il/` or `sc-domain:your-domain.co.il`).
+
+Logs (folder `logs/seo/`, git-ignored):
+
+| File | Content |
+|---|---|
+| `YYYY-MM-DD.json` | the full report of that day |
+| `history.csv` | one row per day: scores, speed, clicks, impressions, CTR, average position, index verdict, last crawl, error count (open in Google Sheets to chart the trend) |
+| `queries.csv` | per-query clicks / impressions / CTR / position each day (find queries at positions 5 to 15 and improve those first) |
+| `serp.csv` | daily keyword positions (only with `SERPAPI_KEY`) |
+| `cron.log` | the printed summary of every cron run |
+
+How to read it: a new site takes days to weeks to be indexed. `index status: PASS` means Google has it. Low CTR with good
+position means improve the title/description; positions 5 to 15 mean the keyword is worth strengthening in the page text;
+`issues:` lines in the summary are things to fix on the page.
 
 ## Troubleshooting
 
@@ -148,3 +189,14 @@ Analytics events (visible in Umami): `call-click`, `whatsapp-click`, `share-face
 - **`update.sh` says local changes:** `git status`, then commit, `git stash`, or use `./update.sh --no-pull`.
 - **Port already in use:** run `./update.sh` (it picks and saves a free port), or force one with `--port N`.
 - **Wrong domain in sitemap or share links:** fix `DOMAIN` in `.env`, then `./update.sh --no-pull`.
+
+## Landing pages (cities, places, vehicle types)
+
+Each page is its own URL (`/hilutz-shetach-yavne/`, `/hilutz-4x4/` ...) with its own title, text, FAQ and structured data, plus `sitemap.xml` listing all of them.
+The text lives in `tools/pages.mjs`. After editing it (or the CSS / head of `site/index.html`) regenerate and commit the result:
+
+```bash
+node tools/build-pages.mjs
+```
+
+To add a city, add an entry to `places` and rerun. The daily SEO check (`seo/check.mjs`) also verifies every page in the sitemap.

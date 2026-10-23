@@ -37,6 +37,8 @@ createServer(async (req, res) => {
     return;
   }
   const path = normalize(decodeURIComponent(new URL(req.url ?? '/', 'http://x').pathname)).replace(/^(\.\.[/\\])+/, '');
+  // folders: /page -> /page/ like nginx
+  if (!path.endsWith('/') && !extname(path)) { res.writeHead(301, { location: `${path}/` }); res.end(); return; }
   const file = join(root, path.endsWith('/') ? `${path}index.html` : path);
   try {
     // the Docker build swaps __DOMAIN__ in; do the same here so the preview matches
