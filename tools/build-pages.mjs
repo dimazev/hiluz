@@ -66,7 +66,7 @@ ${headScripts}
 <body>
 <header class="hero sub">
 <div class="wrap">
-<nav class="crumbs" aria-label="breadcrumb"><a href="/">חילוצי שטח 4X4</a> › ${esc(crumb)}</nav>
+<nav class="crumbs" aria-label="breadcrumb"><a href="/">כננת – חילוצי שטח 4X4</a> › ${esc(crumb)}</nav>
 <h1>${esc(h1)}<span class="sub">${esc(sub)}</span></h1>
 <p class="lead">${esc(lead)}</p>
 <div class="cta">
@@ -81,7 +81,7 @@ ${body}
 </main>
 <footer>
 <ul class="fnav"><li><a href="/">עמוד הבית</a></li>${nav.map(([s, t]) => `<li><a href="/${s}/">${esc(t)}</a></li>`).join('')}</ul>
-© חילוצי שטח 4X4 · חילוץ שטח 24/7 · מחיר לפני יציאה<br>האתר פותח על ידי <a href="mailto:dima.zev@gmail.com">dima.zev@gmail.com</a>
+© כננת – חילוצי שטח 4X4 · חילוץ שטח 24/7 · מחיר לפני יציאה<br>האתר פותח על ידי <a href="mailto:dima.zev@gmail.com">dima.zev@gmail.com</a>
 </footer>
 <div class="bar">
 <a data-umami-event="call-click" class="btn call" href="tel:+${PHONE.intl}">התקשרו</a>
@@ -114,7 +114,7 @@ const steps = `<section id="order"><h2>איך מזמינים</h2><div class="gri
 const vehicleCards = `<div class="grid">${vehicles.map((v) => `<div class="card"><h3><a href="/${v.slug}/">${esc(v.title)}</a></h3><p>${esc(v.sub)}.</p></div>`).join('')}</div>`;
 
 const ldBase = (slug, name, crumbName, extra = {}) => [
-  { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'חילוצי שטח 4X4', item: '__DOMAIN__/' }, { '@type': 'ListItem', position: 2, name: crumbName, item: `__DOMAIN__/${slug}/` }] },
+  { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'כננת – חילוצי שטח 4X4', item: '__DOMAIN__/' }, { '@type': 'ListItem', position: 2, name: crumbName, item: `__DOMAIN__/${slug}/` }] },
   { '@type': 'Service', serviceType: 'חילוץ שטח', name, provider: { '@id': '__DOMAIN__/#business' }, availableChannel: { '@type': 'ServiceChannel', servicePhone: `+${PHONE.intl}` }, ...extra }
 ];
 const ldFaq = (faq) => ({ '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });

@@ -1,4 +1,4 @@
-# חילוצי שטח – static site
+# כננת – חילוצי שטח – static site
 
 One static page (HTML + images, no build step) served by nginx in Docker.
 Umami analytics is served first-party through nginx under `/stats/` (no third-party cookies).
