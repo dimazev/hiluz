@@ -73,7 +73,7 @@ ${headScripts}
 <a data-umami-event="call-click" class="btn call" href="tel:+${PHONE.intl}">${phoneSvg}${PHONE.display}</a>
 <a data-umami-event="whatsapp-click" class="btn wa" href="${waHref(waText)}" rel="noopener">${waSvg}ווטסאפ</a>
 </div>
-<ul class="chips"><li>24/7 כולל שבתות</li><li>מחיר לפני יציאה</li><li>ציוד חילוץ מתאים</li></ul>
+<ul class="chips"><li>24/7 כולל שבתות</li><li>מחיר לפני יציאה</li><li>אחסון חינם עד 24 שעות</li><li>ציוד חילוץ מתאים</li></ul>
 </div>
 </header>
 <main>
