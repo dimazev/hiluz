@@ -1,6 +1,7 @@
 // generates the landing pages (site/<slug>/index.html) and site/sitemap.xml from tools/pages.mjs
 // run: node tools/build-pages.mjs   (the generated files are committed, Docker needs no node)
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PHONE, vehicles, places } from './pages.mjs';
@@ -81,7 +82,7 @@ ${body}
 </main>
 <footer>
 <ul class="fnav"><li><a href="/">עמוד הבית</a></li>${nav.map(([s, t]) => `<li><a href="/${s}/">${esc(t)}</a></li>`).join('')}</ul>
-© כננת – חילוצי שטח 4X4 · חילוץ שטח 24/7 · מחיר לפני יציאה<br>האתר פותח על ידי <a href="mailto:dima.zev@gmail.com">dima.zev@gmail.com</a>
+© כננת – חילוצי שטח 4X4 · חילוץ שטח 24/7 · מחיר לפני יציאה · אחסון חינם עד 24 שעות<br>עודכן לאחרונה: <time class="upd" datetime="__PAGEMOD__">__PAGEMOD_HE__</time><br>האתר פותח על ידי <a href="mailto:dima.zev@gmail.com">dima.zev@gmail.com</a>
 </footer>
 <div class="bar">
 <a data-umami-event="call-click" class="btn call" href="tel:+${PHONE.intl}">התקשרו</a>
@@ -113,7 +114,10 @@ const steps = `<section id="order"><h2>איך מזמינים</h2><div class="gri
 
 const vehicleCards = `<div class="grid">${vehicles.map((v) => `<div class="card"><h3><a href="/${v.slug}/">${esc(v.title)}</a></h3><p>${esc(v.sub)}.</p></div>`).join('')}</div>`;
 
+const STORAGE_FAQ = ['אפשר להשאיר אצלכם את הכלי אחרי החילוץ?', 'כן. אחרי החילוץ אפשר להשאיר אצלנו את הכלי באחסון בחינם עד 24 שעות.'];
+
 const ldBase = (slug, name, crumbName, extra = {}) => [
+  { '@type': 'WebPage', '@id': `__DOMAIN__/${slug}/#webpage`, url: `__DOMAIN__/${slug}/`, name, inLanguage: 'he', isPartOf: { '@id': '__DOMAIN__/#webpage' }, about: { '@id': '__DOMAIN__/#business' }, dateModified: '__PAGEMOD__' },
   { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'כננת – חילוצי שטח 4X4', item: '__DOMAIN__/' }, { '@type': 'ListItem', position: 2, name: crumbName, item: `__DOMAIN__/${slug}/` }] },
   { '@type': 'Service', serviceType: 'חילוץ שטח', name, provider: { '@id': '__DOMAIN__/#business' }, availableChannel: { '@type': 'ServiceChannel', servicePhone: `+${PHONE.intl}` }, ...extra }
 ];
@@ -127,6 +131,7 @@ for (const p of places) {
     [`האם אתם מגיעים ל${n}?`, `כן, אנחנו זמינים ל${n} ולסביבה 24/7, כולל שבתות וחגים. שלחו מיקום בווטסאפ ונאשר איך מגיעים הכי קרוב לכלי.`],
     [`כמה עולה חילוץ שטח ${i}?`, `המחיר תלוי במיקום, בסוג הכלי ובמורכבות החילוץ. מתקשרים או שולחים מיקום ותמונה, והמחיר נמסר לפני שיוצאים אליכם.`],
     p.faq,
+    STORAGE_FAQ,
     ['אילו כלים אתם מחלצים?', 'ג\'יפים ורכבי 4X4, טרקטורונים, רייזרים ואופנועי שטח, וגם רכבים פרטיים וטנדרים שנתקעו בחול או בבוץ.']
   ];
   const title = `חילוצי שטח ${i} 24/7 | כננת – ${PHONE.display}`;
@@ -160,6 +165,7 @@ ${contact(`תקועים ${i}? אנחנו זמינים 24/7`)}
 }
 
 for (const v of vehicles) {
+  const faq = [...v.faq, STORAGE_FAQ];
   const title = `${v.title} 24/7 – ${PHONE.display}`;
   const body = `<div class="wrap"><section id="situations">
 <h2>מתי קוראים ל${esc(v.title)}</h2>
@@ -169,7 +175,7 @@ ${cards(v.cards)}
 ${steps}
 <section id="tips"><h2>נתקעתם? מה עושים עד שמגיעים</h2><ol>${v.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></section>
 <section id="faq"><h2>שאלות נפוצות</h2>
-${faqHtml(v.faq)}
+${faqHtml(faq)}
 </section>
 <section id="areas"><h2>חילוץ שטח לפי אזור</h2>${linkList(places.map((p) => p.slug))}
 <p style="margin-top:14px">סוגי כלים נוספים: ${v.related.map((s) => `<a href="/${s}/">${esc(all.get(s).title)}</a>`).join(' · ')}</p></section>
@@ -178,19 +184,43 @@ ${contact(`כלי תקוע? אנחנו זמינים 24/7`)}
   pages.push({
     slug: v.slug, title, desc: v.desc, h1: v.h1, sub: v.sub, lead: v.lead, crumb: v.title,
     waText: `שלום, צריך ${v.title}. אשמח לשלוח מיקום`,
-    ld: [...ldBase(v.slug, v.title, v.title, { areaServed: { '@type': 'Country', name: 'Israel' }, description: v.desc }), ldFaq(v.faq)],
+    ld: [...ldBase(v.slug, v.title, v.title, { areaServed: { '@type': 'Country', name: 'Israel' }, description: v.desc }), ldFaq(faq)],
     body
   });
 }
 
+// honest "last modified" dates: a page's date moves only when its content changes.
+// tools/lastmod.json keeps a content hash + date per page (commit it with the pages).
+// Google trusts sitemap <lastmod> only when it matches real changes, so never bump it on every deploy.
+const modFile = join(dirname(fileURLToPath(import.meta.url)), 'lastmod.json');
+const mods = existsSync(modFile) ? JSON.parse(readFileSync(modFile, 'utf8')) : {};
+const today = new Date().toISOString().slice(0, 10);
+const heDate = (d) => d.split('-').reverse().join('.');
+const stamp = (key, content) => {
+  const hash = createHash('sha256').update(content).digest('hex').slice(0, 16);
+  if (!mods[key] || mods[key].hash !== hash) mods[key] = { hash, date: today };
+  return mods[key].date;
+};
+const fill = (html, d) => html.replaceAll('__PAGEMOD_HE__', heDate(d)).replaceAll('__PAGEMOD__', d);
+
 for (const pg of pages) {
+  const html = layout(pg);
+  pg.mod = stamp(pg.slug, html);
   mkdirSync(join(root, pg.slug), { recursive: true });
-  writeFileSync(join(root, pg.slug, 'index.html'), layout(pg));
+  writeFileSync(join(root, pg.slug, 'index.html'), fill(html, pg.mod));
 }
 
+// the home page is edited by hand: hash it with its dates blanked, then write the dates back in place
+const DATE_RE = [/("@id":"__DOMAIN__\/#webpage"[^}]*"dateModified":")\d{4}-\d{2}-\d{2}(")/, /(<time class="upd" datetime=")\d{4}-\d{2}-\d{2}(">)[\d.]+(<\/time>)/];
+const homeBlank = home.replace(DATE_RE[0], '$1$2').replace(DATE_RE[1], '$1$2$3');
+const homeMod = stamp('/', homeBlank);
+const homeOut = home.replace(DATE_RE[0], `$1${homeMod}$2`).replace(DATE_RE[1], `$1${homeMod}$2${heDate(homeMod)}$3`);
+if (homeOut !== home) writeFileSync(join(root, 'index.html'), homeOut);
+writeFileSync(modFile, JSON.stringify(mods, null, 2) + '\n');
+
 const urls = [
-  `  <url>\n    <loc>__DOMAIN__/</loc>\n    <lastmod>__LASTMOD__</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>1.0</priority>\n    <image:image>\n      <image:loc>__DOMAIN__/hilutz-shetach-silverado-razer-1024.webp</image:loc>\n      <image:title>חילוץ שטח 24/7 – ג'יפ סילברדו מחלץ רייזר מהחול</image:title>\n    </image:image>\n  </url>`,
-  ...pages.map((p) => `  <url>\n    <loc>__DOMAIN__/${p.slug}/</loc>\n    <lastmod>__LASTMOD__</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>${vehicles.some((v) => v.slug === p.slug) ? '0.8' : '0.7'}</priority>\n  </url>`)
+  `  <url>\n    <loc>__DOMAIN__/</loc>\n    <lastmod>${homeMod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>1.0</priority>\n    <image:image>\n      <image:loc>__DOMAIN__/hilutz-shetach-silverado-razer-1024.webp</image:loc>\n      <image:title>חילוץ שטח 24/7 – ג'יפ סילברדו מחלץ רייזר מהחול</image:title>\n    </image:image>\n  </url>`,
+  ...pages.map((p) => `  <url>\n    <loc>__DOMAIN__/${p.slug}/</loc>\n    <lastmod>${p.mod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>${vehicles.some((v) => v.slug === p.slug) ? '0.8' : '0.7'}</priority>\n  </url>`)
 ];
 writeFileSync(join(root, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join('\n')}\n</urlset>\n`);
 console.log(`${pages.length} pages + sitemap`);
